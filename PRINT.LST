@@ -1,0 +1,84 @@
+Turbo Assembler	 Version 4.1	    02/12/23 19:20:51	    Page 1
+print.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	0100  BB B800		     Start:	     mov bx, 0b800h  ; ES = VideoSegment
+      6	0103  8E C3					     mov es, bx
+      7
+      8	0105  33 DB					     xor bx, bx	     ; BX = 0
+      9
+     10	0107  B9 0000					     mov cx, 0		     ; i = 0
+     11
+     12	010A						     for_01:
+     13
+     14	010A  50 55 8B EC C7 46	02+			     push '$'
+     15	      0024 5D
+     16	0114  50 55 8B EC C7 46	02+			     push [80]	     ; push current char from cmd line
+     17	      0050 5D
+*Warning* print.asm(15)	[Constant] assumed to mean immediate constant
+     18	011E  74 0B					     je	end_for_01
+     19
+     20	0120  26: C6 07	80					     mov byte ptr es:[bx],   [80h]   ; cmd line	char
+*Warning* print.asm(18)	[Constant] assumed to mean immediate constant
+     21	0124  26: C6 47	01 CE					     mov byte ptr es:[bx+1],  0ceh	     ; yellow on red (blink)
+     22
+     23	0129  51						     push cx + 2 ; i +=	2
+**Error** print.asm(21)	Illegal	use of constant
+     24	012A  59						     pop  cx
+     25
+     26								     ; jmp for_01
+     27
+     28	012B						     end_for_01:
+     29
+     30
+     31	012B  B8 4C00					     mov ax, 4c00h ; exit( 0 )
+     32	012E  CD 21					     int 21h
+     33
+     34				     end		     Start
+Turbo Assembler	 Version 4.1	    02/12/23 19:20:51	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/12/23"
+??FILENAME			  Text	 "print	  "
+??TIME				  Text	 "19:20:51"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 PRINT
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+END_FOR_01			  Near	 DGROUP:012B
+FOR_01				  Near	 DGROUP:010A
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0130 Word	  Public  CODE
+Turbo Assembler	 Version 4.1	    02/12/23 19:20:51	    Page 3
+Error Summary
+
+
+
+*Warning* print.asm(15)	[Constant] assumed to mean immediate constant
+*Warning* print.asm(18)	[Constant] assumed to mean immediate constant
+**Error** print.asm(21)	Illegal	use of constant
+
