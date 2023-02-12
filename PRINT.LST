@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    02/12/23 19:20:51	    Page 1
+Turbo Assembler	 Version 4.1	    02/12/23 23:40:30	    Page 1
 print.asm
 
 
@@ -12,35 +12,36 @@ print.asm
       7
       8	0105  33 DB					     xor bx, bx	     ; BX = 0
       9
-     10	0107  B9 0000					     mov cx, 0		     ; i = 0
+     10	0107  BA 0000					     mov dx, 0		     ; i = 0
      11
      12	010A						     for_01:
      13
-     14	010A  50 55 8B EC C7 46	02+			     push '$'
-     15	      0024 5D
-     16	0114  50 55 8B EC C7 46	02+			     push [80]	     ; push current char from cmd line
-     17	      0050 5D
-*Warning* print.asm(15)	[Constant] assumed to mean immediate constant
-     18	011E  74 0B					     je	end_for_01
+     14	010A  33 F6					     xor si, si		     ; SI = 0 ,	set char address
+     15	010C  81 C6 0081				     add si, 81h
+     16	0110  03 F2					     add si, dx
+     17
+     18	0112  8B 0C					     mov cx, [si]    ; cx = currCmdLineChar
      19
-     20	0120  26: C6 07	80					     mov byte ptr es:[bx],   [80h]   ; cmd line	char
-*Warning* print.asm(18)	[Constant] assumed to mean immediate constant
-     21	0124  26: C6 47	01 CE					     mov byte ptr es:[bx+1],  0ceh	     ; yellow on red (blink)
+     20	0114  80 FD 0D					     cmp ch, 13d     ; strcmp( currCmdLineChar,	0 )
+     21	0117  74 0A					     je	end_for_01
      22
-     23	0129  51						     push cx + 2 ; i +=	2
-**Error** print.asm(21)	Illegal	use of constant
-     24	012A  59						     pop  cx
+     23	0119  8B DA						     mov bx, dx
+     24	011B  03 DA						     add bx, dx
      25
-     26								     ; jmp for_01
-     27
-     28	012B						     end_for_01:
-     29
+     26	011D  26: 88 2F						     mov     byte ptr es:[bx],	  ch	     ; cmd line	char
+     27								     ; mov byte	ptr es:[bx+1],	0ceh ; yellow on red (blink)
+     28
+     29	0120  42						     inc dx  ; i++
      30
-     31	012B  B8 4C00					     mov ax, 4c00h ; exit( 0 )
-     32	012E  CD 21					     int 21h
-     33
-     34				     end		     Start
-Turbo Assembler	 Version 4.1	    02/12/23 19:20:51	    Page 2
+     31	0121  EB E7						     jmp for_01
+     32
+     33	0123						     end_for_01:
+     34
+     35	0123  B8 4C00					     mov ax, 4c00h ; exit( 0 )
+     36	0126  CD 21					     int 21h
+     37
+     38				     end		     Start
+Turbo Assembler	 Version 4.1	    02/12/23 23:40:30	    Page 2
 Symbol Table
 
 
@@ -50,7 +51,7 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "02/12/23"
 ??FILENAME			  Text	 "print	  "
-??TIME				  Text	 "19:20:51"
+??TIME				  Text	 "23:40:30"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
@@ -64,7 +65,7 @@ Symbol Name			  Type	 Value
 @MODEL				  Text	 1
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
-END_FOR_01			  Near	 DGROUP:012B
+END_FOR_01			  Near	 DGROUP:0123
 FOR_01				  Near	 DGROUP:010A
 START				  Near	 DGROUP:0100
 
@@ -72,13 +73,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  0130 Word	  Public  CODE
-Turbo Assembler	 Version 4.1	    02/12/23 19:20:51	    Page 3
-Error Summary
-
-
-
-*Warning* print.asm(15)	[Constant] assumed to mean immediate constant
-*Warning* print.asm(18)	[Constant] assumed to mean immediate constant
-**Error** print.asm(21)	Illegal	use of constant
+  _TEXT				  16  0128 Word	  Public  CODE
 
