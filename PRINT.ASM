@@ -22,9 +22,10 @@ Start:		mov bx, 0b800h	; ES = VideoSegment
 
 				mov bx, dx
 				add bx, dx
-				
+				add bx, 1990d ; 1920 = 12*160 -> 13 line
+
 				mov	byte ptr es:[bx],    ch 	; cmd line char 
-				; mov byte ptr es:[bx+1],  0ceh	; yellow on red (blink)
+				mov byte ptr es:[bx+1],  0b0h	; yellow on red (blink)
 
 				inc dx 	; i++
 

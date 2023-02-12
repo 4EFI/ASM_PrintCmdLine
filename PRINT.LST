@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    02/12/23 23:40:30	    Page 1
+Turbo Assembler	 Version 4.1	    02/13/23 00:17:46	    Page 1
 print.asm
 
 
@@ -23,25 +23,26 @@ print.asm
      18	0112  8B 0C					     mov cx, [si]    ; cx = currCmdLineChar
      19
      20	0114  80 FD 0D					     cmp ch, 13d     ; strcmp( currCmdLineChar,	0 )
-     21	0117  74 0A					     je	end_for_01
+     21	0117  74 13					     je	end_for_01
      22
      23	0119  8B DA						     mov bx, dx
      24	011B  03 DA						     add bx, dx
-     25
-     26	011D  26: 88 2F						     mov     byte ptr es:[bx],	  ch	     ; cmd line	char
-     27								     ; mov byte	ptr es:[bx+1],	0ceh ; yellow on red (blink)
-     28
-     29	0120  42						     inc dx  ; i++
-     30
-     31	0121  EB E7						     jmp for_01
-     32
-     33	0123						     end_for_01:
-     34
-     35	0123  B8 4C00					     mov ax, 4c00h ; exit( 0 )
-     36	0126  CD 21					     int 21h
-     37
-     38				     end		     Start
-Turbo Assembler	 Version 4.1	    02/12/23 23:40:30	    Page 2
+     25	011D  81 C3 07C6					     add bx, 1990d ; 1920 = 12*160 -> 13 line
+     26
+     27	0121  26: 88 2F						     mov     byte ptr es:[bx],	  ch	     ; cmd line	char
+     28	0124  26: C6 47	01 B0					     mov byte ptr es:[bx+1],  0b0h   ; yellow on red (blink)
+     29
+     30	0129  42						     inc dx  ; i++
+     31
+     32	012A  EB DE						     jmp for_01
+     33
+     34	012C						     end_for_01:
+     35
+     36	012C  B8 4C00					     mov ax, 4c00h ; exit( 0 )
+     37	012F  CD 21					     int 21h
+     38
+     39				     end		     Start
+Turbo Assembler	 Version 4.1	    02/13/23 00:17:46	    Page 2
 Symbol Table
 
 
@@ -49,9 +50,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "02/12/23"
+??DATE				  Text	 "02/13/23"
 ??FILENAME			  Text	 "print	  "
-??TIME				  Text	 "23:40:30"
+??TIME				  Text	 "00:17:45"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
@@ -65,7 +66,7 @@ Symbol Name			  Type	 Value
 @MODEL				  Text	 1
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
-END_FOR_01			  Near	 DGROUP:0123
+END_FOR_01			  Near	 DGROUP:012C
 FOR_01				  Near	 DGROUP:010A
 START				  Near	 DGROUP:0100
 
@@ -73,5 +74,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  0128 Word	  Public  CODE
+  _TEXT				  16  0131 Word	  Public  CODE
 
