@@ -1,48 +1,84 @@
-Turbo Assembler	 Version 4.1	    02/13/23 00:17:46	    Page 1
+Turbo Assembler	 Version 4.1	    02/16/23 20:15:03	    Page 1
 print.asm
 
 
 
-      1	0000			     .model tiny
-      2	0000			     .code
-      3				     org 100h
-      4
-      5	0100  BB B800		     Start:	     mov bx, 0b800h  ; ES = VideoSegment
-      6	0103  8E C3					     mov es, bx
+      1				     .186
+      2	0000			     .model tiny
+      3	0000			     .code
+      4				     org 100h
+      5
+      6				     locals __
       7
-      8	0105  33 DB					     xor bx, bx	     ; BX = 0
-      9
-     10	0107  BA 0000					     mov dx, 0		     ; i = 0
-     11
-     12	010A						     for_01:
-     13
-     14	010A  33 F6					     xor si, si		     ; SI = 0 ,	set char address
-     15	010C  81 C6 0081				     add si, 81h
-     16	0110  03 F2					     add si, dx
-     17
-     18	0112  8B 0C					     mov cx, [si]    ; cx = currCmdLineChar
-     19
-     20	0114  80 FD 0D					     cmp ch, 13d     ; strcmp( currCmdLineChar,	0 )
-     21	0117  74 13					     je	end_for_01
-     22
-     23	0119  8B DA						     mov bx, dx
-     24	011B  03 DA						     add bx, dx
-     25	011D  81 C3 07C6					     add bx, 1990d ; 1920 = 12*160 -> 13 line
+      8	0100  BB B800		     Start:	     mov bx, 0b800h  ; ES = VideoSegment
+      9	0103  8E C3					     mov es, bx
+     10
+     11	0105  E8 0005					     call PrintCmdLiine
+     12
+     13	0108  B8 4C00					     mov ax, 4c00h ; exit( 0 )
+     14	010B  CD 21					     int 21h
+     15
+     16				     ;------------------------------------------------
+     17				     ;	     PRINT CMD LINE
+     18				     ;------------------------------------------------
+     19				     ; ENTRY:	     NONE
+     20				     ; EXIT:	     NONE
+     21				     ; EXPECTS:	     ES	= 0b800h (VIDEO	SEGMENT)
+     22				     ; DESTROYS:     BX	CX DX Si
+     23				     ;------------------------------------------------
+     24
+     25	010D			     PrintCmdLiine   proc
      26
-     27	0121  26: 88 2F						     mov     byte ptr es:[bx],	  ch	     ; cmd line	char
-     28	0124  26: C6 47	01 B0					     mov byte ptr es:[bx+1],  0b0h   ; yellow on red (blink)
+     27	010D  BB 0000						     mov bx, 0		     ; BX = 0
+     28	0110  BA 0000						     mov dx, 0		     ; i = 0
      29
-     30	0129  42						     inc dx  ; i++
+     30	0113							     __next:
      31
-     32	012A  EB DE						     jmp for_01
-     33
-     34	012C						     end_for_01:
+     32	0113  BE 0081						     mov si, 81h	     ; SI = 81h	, start	cmd line char	    +
+     33				     address
+     34	0116  03 F2						     add si, dx
      35
-     36	012C  B8 4C00					     mov ax, 4c00h ; exit( 0 )
-     37	012F  CD 21					     int 21h
-     38
-     39				     end		     Start
-Turbo Assembler	 Version 4.1	    02/13/23 00:17:46	    Page 2
+     36	0118  8B 0C						     mov cx, [si]    ; cx = currCmdLineChar
+     37
+     38	011A  80 FD 0D						     cmp ch, 13d     ; strcmp( currCmdLineChar,	'\r' )
+     39	011D  74 18						     je	__end_loop
+     40
+     41	011F  80 FD 00						     cmp ch, 0d		     ; strcmp( currCmdLineChar,	' ' )
+     42	0122  74 13						     je	__end_loop
+     43
+     44	0124  8B DA							     mov bx, dx
+     45	0126  03 DA							     add bx, dx
+     46	0128  81 C3 07C6						     add bx, 1990d ; 1920 = 12*2*80 -> 13 line
+     47
+     48	012C  26: 88 2F							     mov     byte ptr es:[bx],	  ch	     ; cmd line	char
+     49	012F  26: C6 47	01 B0						     mov byte ptr es:[bx+1],  0b0h   ; yellow on red (blink)
+     50
+     51	0134  42							     inc dx  ; i++
+     52
+     53	0135  E2 DC							     loop __next
+     54
+     55	0137							     __end_loop:
+     56
+     57	0137  C3						     ret
+Turbo Assembler	 Version 4.1	    02/16/23 20:15:03	    Page 2
+print.asm
+
+
+
+     58	0138							     endp
+     59
+     60				     ;------------------------------------------------
+     61				     ;	     GET CMD LINE SIZE
+     62				     ;------------------------------------------------
+     63				     ;
+     64				     ;------------------------------------------------
+     65
+     66
+     67
+     68				     ;------------------------------------------------
+     69
+     70				     end			     Start
+Turbo Assembler	 Version 4.1	    02/16/23 20:15:03	    Page 3
 Symbol Table
 
 
@@ -50,14 +86,14 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "02/13/23"
+??DATE				  Text	 "02/16/23"
 ??FILENAME			  Text	 "print	  "
-??TIME				  Text	 "00:17:45"
+??TIME				  Text	 "20:15:03"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
 @CODESIZE			  Text	 0
-@CPU				  Text	 0101H
+@CPU				  Text	 0103H
 @CURSEG				  Text	 _TEXT
 @DATA				  Text	 DGROUP
 @DATASIZE			  Text	 0
@@ -66,13 +102,14 @@ Symbol Name			  Type	 Value
 @MODEL				  Text	 1
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
-END_FOR_01			  Near	 DGROUP:012C
-FOR_01				  Near	 DGROUP:010A
+PRINTCMDLIINE			  Near	 DGROUP:010D
 START				  Near	 DGROUP:0100
+__END_LOOP			  Near	 DGROUP:0137
+__NEXT				  Near	 DGROUP:0113
 
 Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  0131 Word	  Public  CODE
+  _TEXT				  16  0138 Word	  Public  CODE
 
