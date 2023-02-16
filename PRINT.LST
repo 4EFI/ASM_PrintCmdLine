@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    02/16/23 20:15:03	    Page 1
+Turbo Assembler	 Version 4.1	    02/16/23 21:40:00	    Page 1
 print.asm
 
 
@@ -29,56 +29,99 @@ print.asm
      24
      25	010D			     PrintCmdLiine   proc
      26
-     27	010D  BB 0000						     mov bx, 0		     ; BX = 0
-     28	0110  BA 0000						     mov dx, 0		     ; i = 0
-     29
-     30	0113							     __next:
-     31
-     32	0113  BE 0081						     mov si, 81h	     ; SI = 81h	, start	cmd line char	    +
-     33				     address
-     34	0116  03 F2						     add si, dx
+     27	010D  E8 0041						     call GetCmdLineSize
+     28
+     29	0110  D1 E3						     shl bx, 1		     ; start str centering ( 160 - 2 * bx ) +
+     30				     / 2 + ( 12	* 2 * 80 )
+     31	0112  F7 DB						     neg bx
+     32	0114  81 C3 00A0					     add bx, 160
+     33	0118  D1 EB						     shr bx, 1
+     34	011A  81 C3 0780					     add bx, 12	* 2 * 80
      35
-     36	0118  8B 0C						     mov cx, [si]    ; cx = currCmdLineChar
+     36	011E  8B CB						     mov cx, bx		     ; cx = bx
      37
-     38	011A  80 FD 0D						     cmp ch, 13d     ; strcmp( currCmdLineChar,	'\r' )
-     39	011D  74 18						     je	__end_loop
-     40
-     41	011F  80 FD 00						     cmp ch, 0d		     ; strcmp( currCmdLineChar,	' ' )
-     42	0122  74 13						     je	__end_loop
-     43
-     44	0124  8B DA							     mov bx, dx
-     45	0126  03 DA							     add bx, dx
-     46	0128  81 C3 07C6						     add bx, 1990d ; 1920 = 12*2*80 -> 13 line
-     47
-     48	012C  26: 88 2F							     mov     byte ptr es:[bx],	  ch	     ; cmd line	char
-     49	012F  26: C6 47	01 B0						     mov byte ptr es:[bx+1],  0b0h   ; yellow on red (blink)
-     50
-     51	0134  42							     inc dx  ; i++
+     38	0120  83 E1 01						     and cx, 1		     ; cx % 2 ?= 0
+     39	0123  83 C9 00						     or	 cx, 0
+     40	0126  83 F9 00						     cmp cx, 0
+     41	0129  74 03						     je	     __even
+     42	012B  83 EB 01							     sub bx, 1
+     43	012E							     __even:
+     44
+     45	012E  BA 0000						     mov dx, 0		     ; i = 0
+     46
+     47	0131							     __next:
+     48
+     49	0131  BE 0081						     mov si, 81h	     ; SI = 81h	, start	cmd line char	    +
+     50				     address
+     51	0134  03 F2						     add si, dx
      52
-     53	0135  E2 DC							     loop __next
+     53	0136  8B 0C						     mov cx, [si]    ; cx = currCmdLineChar
      54
-     55	0137							     __end_loop:
-     56
-     57	0137  C3						     ret
-Turbo Assembler	 Version 4.1	    02/16/23 20:15:03	    Page 2
+     55	0138  80 FD 0D						     cmp ch, 13d     ; strcmp( currCmdLineChar,	'\r' )
+     56	013B  74 13						     je	__end_loop
+     57
+Turbo Assembler	 Version 4.1	    02/16/23 21:40:00	    Page 2
 print.asm
 
 
 
-     58	0138							     endp
-     59
-     60				     ;------------------------------------------------
-     61				     ;	     GET CMD LINE SIZE
-     62				     ;------------------------------------------------
-     63				     ;
-     64				     ;------------------------------------------------
+     58	013D  80 FD 00						     cmp ch, 0d		     ; strcmp( currCmdLineChar,	0 )
+     59	0140  74 0E						     je	__end_loop
+     60
+     61	0142  26: 88 2F							     mov     byte ptr es:[bx],	  ch	     ; cmd line	char
+     62	0145  26: C6 47	01 B0						     mov byte ptr es:[bx+1],  0b0h   ; yellow on red (blink)
+     63
+     64	014A  83 C3 02							     add bx, 2	     ; bx += 2
      65
-     66
+     66	014D  42							     inc dx	     ; i++
      67
-     68				     ;------------------------------------------------
+     68	014E  E2 E1							     loop __next
      69
-     70				     end			     Start
-Turbo Assembler	 Version 4.1	    02/16/23 20:15:03	    Page 3
+     70	0150							     __end_loop:
+     71
+     72	0150  C3						     ret
+     73	0151							     endp
+     74
+     75				     ;------------------------------------------------
+     76				     ;	     GET CMD LINE SIZE
+     77				     ;------------------------------------------------
+     78				     ; ENTRY:	     NONE
+     79				     ; EXIT:	     BX	= CMD LINE SIZE
+     80				     ; ENTRY:	     NONE
+     81				     ; DESTROYS:     BX	CX SI
+     82				     ;------------------------------------------------
+     83
+     84	0151			     GetCmdLineSize  proc
+     85
+     86	0151  BB 0000						     mov bx, 0		     ; i = 0
+     87
+     88	0154							     __next:
+     89
+     90	0154  BE 0081						     mov si, 81h	     ; SI = 81h	, start	cmd line char	    +
+     91				     address
+     92	0157  03 F3						     add si, bx
+     93
+     94	0159  8B 0C						     mov cx, [si]    ; cx = currCmdLineChar
+     95
+     96	015B  80 FD 0D						     cmp ch, 13d     ; strcmp( currCmdLineChar,	'\r' )
+     97	015E  74 08						     je	__end_loop
+     98
+     99	0160  80 FD 00						     cmp ch, 0d		     ; strcmp( currCmdLineChar,	0 )
+    100	0163  74 03						     je	__end_loop
+    101
+    102	0165  43							     inc bx	     ; i++
+    103
+    104	0166  E2 EC							     loop __next
+    105
+    106	0168							     __end_loop:
+    107
+    108	0168  C3						     ret
+    109	0169							     endp
+    110
+    111				     ;------------------------------------------------
+    112
+    113				     end			     Start
+Turbo Assembler	 Version 4.1	    02/16/23 21:40:00	    Page 3
 Symbol Table
 
 
@@ -88,7 +131,7 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "02/16/23"
 ??FILENAME			  Text	 "print	  "
-??TIME				  Text	 "20:15:03"
+??TIME				  Text	 "21:40:00"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
@@ -102,14 +145,18 @@ Symbol Name			  Type	 Value
 @MODEL				  Text	 1
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
+GETCMDLINESIZE			  Near	 DGROUP:0151
 PRINTCMDLIINE			  Near	 DGROUP:010D
 START				  Near	 DGROUP:0100
-__END_LOOP			  Near	 DGROUP:0137
-__NEXT				  Near	 DGROUP:0113
+__END_LOOP			  Near	 DGROUP:0150
+__END_LOOP			  Near	 DGROUP:0168
+__EVEN				  Near	 DGROUP:012E
+__NEXT				  Near	 DGROUP:0131
+__NEXT				  Near	 DGROUP:0154
 
 Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  0138 Word	  Public  CODE
+  _TEXT				  16  0169 Word	  Public  CODE
 

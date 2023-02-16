@@ -23,8 +23,24 @@ Start:		mov bx, 0b800h	; ES = VideoSegment
 ;------------------------------------------------
 
 PrintCmdLiine	proc
+				
+				call GetCmdLineSize
 
-				mov bx, 0	  	; BX = 0
+				shl bx, 1		; start str centering ( 160 - 2 * bx ) / 2 + ( 12 * 2 * 80 )
+				neg bx 			
+				add bx, 160
+				shr bx, 1		
+				add bx, 12 * 2 * 80
+
+				mov cx, bx		; cx = bx
+
+				and cx, 1		; cx % 2 ?= 0
+				or  cx, 0
+				cmp cx, 0	
+				je	__even
+					sub bx, 1
+				__even:
+
 				mov dx, 0 		; i = 0
 
 				__next:
@@ -37,17 +53,15 @@ PrintCmdLiine	proc
 				cmp ch, 13d 	; strcmp( currCmdLineChar, '\r' )
 				je __end_loop
 
-				cmp ch, 0d	 	; strcmp( currCmdLineChar, ' ' )
+				cmp ch, 0d	 	; strcmp( currCmdLineChar, 0 )
 				je __end_loop
-
-					mov bx, dx
-					add bx, dx
-					add bx, 1990d ; 1920 = 12*2*80 -> 13 line
 
 					mov	byte ptr es:[bx],    ch 	; cmd line char 
 					mov byte ptr es:[bx+1],  0b0h	; yellow on red (blink)
 
-					inc dx 	; i++
+					add bx, 2	; bx += 2
+
+					inc dx 		; i++
 
 					loop __next
 		
@@ -59,10 +73,37 @@ PrintCmdLiine	proc
 ;------------------------------------------------
 ;	GET CMD LINE SIZE
 ;------------------------------------------------
-;
+; ENTRY:	NONE
+; EXIT:		BX = CMD LINE SIZE
+; ENTRY:	NONE
+; DESTROYS:	BX CX SI
 ;------------------------------------------------
 
+GetCmdLineSize	proc
 
+				mov bx, 0 		; i = 0
+
+				__next:
+
+				mov si, 81h		; SI = 81h , start cmd line char address 
+				add si, bx
+
+				mov cx, [si]	; cx = currCmdLineChar
+
+				cmp ch, 13d 	; strcmp( currCmdLineChar, '\r' )
+				je __end_loop
+
+				cmp ch, 0d	 	; strcmp( currCmdLineChar, 0 )
+				je __end_loop
+
+					inc bx 		; i++
+
+					loop __next
+		
+				__end_loop:
+
+				ret
+				endp
 
 ;------------------------------------------------
 
